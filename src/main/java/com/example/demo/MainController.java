@@ -2,12 +2,11 @@ package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 @RestController
 @CrossOrigin("*")
@@ -15,6 +14,8 @@ import java.net.URISyntaxException;
 public class MainController {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @GetMapping(path = "/")
     public @ResponseBody Iterable<User> getAllUsers() {
@@ -45,6 +46,8 @@ public class MainController {
     @PostMapping(path = "/")
     public ResponseEntity<User> create(@RequestBody User user) {
         try {
+            passwordEncoder = new SecurityConfig().passwordEncoder();
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             User newUser = userRepository.save(user);
             URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                     .path("/{id}")
